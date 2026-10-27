@@ -277,7 +277,7 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
         send("loadDeskState", ["value":state])
         publishConfiguration()
         publishFiles()
-        tick()
+        wallpaper.lastSignature="";tick()
     }
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy)->Void) {
         decisionHandler(navigationAction.request.url?.isFileURL == true ? .allow : .cancel)
@@ -301,6 +301,8 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
             return
         }
         if key.hasPrefix("wallpaper:"){let action=String(key.dropFirst(10));do{switch action {
+            case "photo":let picker=NSOpenPanel();picker.allowedContentTypes=[.image];picker.canChooseDirectories=false;picker.message="Add a still wallpaper · your original stays in place";NSApp.activate(ignoringOtherApps:true);if picker.runModal() == .OK,let url=picker.url{try wallpaper.importPhoto(url)}
+            case let action where action.hasPrefix("select:"):try wallpaper.select(String(action.dropFirst(7)))
             case "choose":let picker=NSOpenPanel();picker.allowedContentTypes=[.movie];picker.canChooseDirectories=false;picker.message="Choose a local video · optimized to a silent 720p, 24 fps loop up to 30 seconds";NSApp.activate(ignoringOtherApps:true);if picker.runModal() == .OK,let url=picker.url{send("showFeedback",["text":"Optimizing wallpaper once. Your original video stays in place."]);wallpaper.importVideo(url){[weak self]error in self?.send("showFeedback",["text":error?.localizedDescription ?? "Video ready. Motion pauses on battery and during heavy work.","error":error != nil]);self?.tick()}}
             case "undo":try wallpaper.undo()
             case "match":wallpaper.settings.matchNative=true;try wallpaper.matchNative();try wallpaper.save()
@@ -417,7 +419,10 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
     func tick() {
         if configStore.modified != configModified {let old=configModified;setupDestinations();if configModified != old{loadDesktopItems();publishConfiguration();publishFiles();if let error=configurationError{send("showFeedback",["text":error,"error":true])}}}
         let measuredCPU=cpu();wallpaper.update(cpu:measuredCPU)
-        send("updateWallpaper",["native":wallpaper.image != nil,"mode":wallpaper.settings.mode,"status":wallpaper.status,"matched":wallpaper.settings.matchNative,"hasVideo":wallpaper.settings.videoPath != nil])
+        let wallpaperSignature="\(wallpaper.settings.mode)|\(wallpaper.status)|\(wallpaper.settings.matchNative)|\(wallpaper.settings.selectedID ?? "city")|\(wallpaper.galleryRows.count)|\(wallpaper.palette)|\(wallpaper.image != nil)"
+        if wallpaper.lastSignature != wallpaperSignature{wallpaper.lastSignature=wallpaperSignature
+        send("updateWallpaper",["native":wallpaper.image != nil,"mode":wallpaper.settings.mode,"status":wallpaper.status,"matched":wallpaper.settings.matchNative,"hasVideo":wallpaper.settings.videoPath != nil,"gallery":wallpaper.galleryRows,"selectedID":wallpaper.settings.selectedID ?? "city","palette":wallpaper.palette])
+        }
         let running=Set(NSWorkspace.shared.runningApplications.compactMap{$0.bundleURL?.path})
         send("updateSystem",["cpu":Int(measuredCPU.rounded()),"memory":Int(memory().rounded()),"battery":battery(),"running":destinations.filter{running.contains($0.value)}.map{$0.key}])
         let music=configuration.music

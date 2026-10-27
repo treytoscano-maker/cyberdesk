@@ -1,11 +1,8 @@
-# Cyberdesk 3.8.0 · visual customization & adaptive wallpaper
+# Cyberdesk 3.9.0 · still wallpaper gallery & collection palettes
 
-- Visual card gallery, live card preview, red/cyan accents, and App/Folder/Website/File shortcut choices with native local pickers.
-- Separate Wallpaper and Workspace/music settings.
-- Default ambient glow over the existing city image; no video decoding. Optional local videos are optimized once to silent 720p/24 fps loops up to 30 seconds, on the primary screen only.
-- Matching native still wallpaper with per-display backups, Undo wallpaper changes, and restore on quit.
-- Motion pauses on battery, Low Power Mode, Reduce Motion, sleep, high system CPU, thermal pressure, hidden windows, and estimated heavy window coverage.
+- Personal thumbnail gallery in Customize → Wallpaper, with copy-only Add image and the original Cyber City choice.
+- Selecting an image switches the background, native Mac wallpaper, and its collection palette in Still mode. Warm/cool card accents adapt to city, sage, solar or waterfront palettes.
+- Native background switching was verified across three connected screens; the previous background was restored after testing. Gallery/palette UI regression checks passed, including preserving focus during status updates.
+- The main app sends the gallery only when wallpaper state changes. No continuous video or image generation is required for still backgrounds.
 
-Local build, UI regression checks, visual browser review, native video conversion test, and wallpaper apply/restore/reapply on three displays passed. Screenshot preview and native file dragging were confirmed by the user in 3.7. End-to-end downloaded-video playback and performance across other hardware remain unverified. A short main-process CPU sample is not a comprehensive GPU/WebKit benchmark. Still mode is always available.
-
-Apple Silicon app and source starter included; no private configuration, backups or third-party video. Early preview, locally signed, not notarized. macOS may block downloaded apps; source build is the supported fallback. Read README before starting.
+No personal gallery, enhanced images, wallpaper backups or private settings are included. A fresh install contains Cyber City; add images you are permitted to use. Read README for restoration, multi-Space limitations and resource-use notes. Early preview, Apple Silicon, locally signed and not notarized. macOS may block downloaded copies; source build is the supported fallback.

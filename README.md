@@ -4,7 +4,7 @@ A movable glass desktop workspace with per-monitor cards, real Desktop browsing,
 ![Visual Customize editor](docs/customize.png)
 
 ## Download
-Get the [latest preview release](https://github.com/treytoscano-maker/cyberdesk/releases/tag/v3.8.0). Download `Cyberdesk-v3.8.0-AppleSilicon.zip` for an experimental prebuilt app on Apple Silicon Macs, or `Cyberdesk-v3.8.0-Starter.zip` for the source starter. Intel Macs must build from source; Intel is untested.
+Get the [latest preview release](https://github.com/treytoscano-maker/cyberdesk/releases/tag/v3.9.0). Download `Cyberdesk-v3.9.0-AppleSilicon.zip` for an experimental prebuilt app on Apple Silicon Macs, or `Cyberdesk-v3.9.0-Starter.zip` for the source starter. Intel Macs must build from source; Intel is untested.
 
 The prebuilt app is locally signed, not Apple Developer ID signed or notarized. macOS may block a downloaded copy. Building from reviewed source is the supported fallback; no security settings need to be disabled. This is an early preview, not a verified installer for every Mac.
 
@@ -55,3 +55,8 @@ Wallpaper offers Still, Ambient glow, or Your video. Ambient glow is the default
 Motion pauses on battery, Low Power Mode, Reduce Motion, display sleep, high system CPU, thermal pressure, hidden desktop windows, or approximately full window coverage. It uses a coarse coverage estimate, not screenshots. Resource use depends on the Mac and other apps; GPU and all WebKit work have not been benchmarked comprehensively. Still remains available.
 
 The matching native still is applied to connected screens in their active desktop Spaces. Other Spaces may need macOS Wallpaper → Show on all Spaces. Custom video is not installed on the pre-login screen. Wallpaper backups/settings are local in `~/Library/Application Support/Cyberdesk/Wallpaper`, outside this repository. Undo wallpaper changes restores the original native pictures and the still Cyberdesk city. Restore original desktop / Quit also turns off sign-in startup. A wallpaper apply → restore → reapply test passed on three connected displays. Native downloaded-video playback on other machines remains unverified.
+
+## Still wallpaper gallery (3.9)
+Customize → Wallpaper now shows a personal thumbnail gallery. Choose a picture to switch the desktop, matching native Mac wallpaper and its stored interface palette. Selecting a picture uses Still mode. Cyber City remains available, and Add image copies an image into your local gallery without changing the source. New imports start with a neutral aqua palette. Palette presets map card warm/cool accents to the selected collection theme.
+
+Gallery metadata lives in `~/Library/Application Support/Cyberdesk/Wallpaper/library.json`, with entries `{id, name, path, palette}`. Supported palette IDs: city, sage, solar, waterfront. These personal files and any AI-enhanced images are excluded from the source and release. A fresh install starts with Cyber City; bring your own permitted images. No image-generation service runs inside Cyberdesk.
