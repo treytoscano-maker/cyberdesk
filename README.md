@@ -1,8 +1,10 @@
 # Cyberdesk for Mac
 A movable glass desktop workspace with per-monitor cards, real Desktop browsing, configurable shortcuts and music controls.
 
+![Visual Customize editor](docs/customize.png)
+
 ## Download
-Get the [latest preview release](https://github.com/treytoscano-maker/cyberdesk/releases/tag/v3.7.0). Download `Cyberdesk-v3.7.0-AppleSilicon.zip` for an experimental prebuilt app on Apple Silicon Macs, or `Cyberdesk-v3.7.0-Starter.zip` for the source starter. Intel Macs must build from source; Intel is untested.
+Get the [latest preview release](https://github.com/treytoscano-maker/cyberdesk/releases/tag/v3.8.0). Download `Cyberdesk-v3.8.0-AppleSilicon.zip` for an experimental prebuilt app on Apple Silicon Macs, or `Cyberdesk-v3.8.0-Starter.zip` for the source starter. Intel Macs must build from source; Intel is untested.
 
 The prebuilt app is locally signed, not Apple Developer ID signed or notarized. macOS may block a downloaded copy. Building from reviewed source is the supported fallback; no security settings need to be disabled. This is an early preview, not a verified installer for every Mac.
 
@@ -25,7 +27,7 @@ Requires macOS and Apple's Xcode Command Line Tools (install from Apple). Tested
 Spotify and Apple Music can show real playback and controls after Connect and macOS approval. SoundCloud/custom URLs open their own player; native track metadata/transport is not provided for web services. Apple Music was checked against its installed scripting definition but not verified with a playing user library.
 
 ## Your own cards and organization
-**CUSTOMIZE → Edit cards & shortcuts** edits the five shortcut sections and adds custom cards. Each shortcut takes a label, destination (URL, absolute/~ path, app name or `bundle:identifier`), and optional description. Add/remove shortcuts, rename cards, choose cyber red/cyan for custom cards, then Save cards. CARDS chooses which appear on each monitor; new custom cards start hidden and crowded layouts can reject additional cards. Removing a custom card removes only its definition. Configuration saves keep a backup.
+**CUSTOMIZE → Cards** edits the five shortcut sections and adds custom cards. Each shortcut takes a label, destination (URL, absolute/~ path, app name or `bundle:identifier`), and optional description. Add/remove shortcuts, rename cards, choose cyber red/cyan for custom cards, then Save cards. CARDS chooses which appear on each monitor; new custom cards start hidden and crowded layouts can reject additional cards. Removing a custom card removes only its definition. Configuration saves keep a backup.
 
 Right-click a Desktop tile to set a display name or group. Empty fields restore automatic naming/grouping. The actual file/folder names and locations are unchanged. These labels are in the workflow configuration too, so an authorized local assistant can help organize the view.
 
@@ -37,10 +39,19 @@ Local file: `~/Library/Application Support/Cyberdesk/config.json`. Example: `Sou
 `CYBERDESK_CONFIG` can select a different config file when launching the executable. Layout preferences are stored locally under the app's bundle identifier. Don't ship your config, preferences, Desktop files, logs, or backups.
 
 ## Restore
-Restore original desktop / Quit closes the overlay and disables its own optional sign-in startup. The app does not replace Finder or change your wallpaper. Enable sign-in only if wanted using the menu-bar option; desktop layers open on connected screens at sign-in. Keep your original app and configuration before upgrading. The main author's existing room backup is not included in this generic starter.
+Restore original desktop / Quit closes the overlay and disables its own optional sign-in startup. The app does not replace Finder. Matching the native wallpaper keeps an original copy per display and restores it when using Restore original desktop / Quit. Enable sign-in only if wanted using the menu-bar option; desktop layers open on connected screens at sign-in. Keep your original app and configuration before upgrading. The main author's existing room backup is not included in this generic starter.
 
 ## Sharing
 This package contains generic defaults, source, a generated city wallpaper, a reusable customization prompt, and an MIT license for the code. The wallpaper is AI-generated and may be replaced. App/service names belong to their respective owners; this project has no affiliation with them. No accounts, private configuration, client files, screenshots, or API keys are included. Review your own screenshots and configuration before posting. This public starter excludes the author’s personal setup.
 
 ## Verification
 Local Swift build, file-copy/configuration checks, and interface regression checks passed. The checks cover duplicate-name safety, originals preserved, invalid image rejection, config backups, folder views and web/native music states. The file export pasteboard contains file URLs rather than text IDs, and automated checks cover preview state, custom cards and virtual labels. End-to-end dragging into chat and Apple Music playback still need hands-on acceptance. The experimental prebuilt download is Apple Silicon only and is not notarized.
+
+## Wallpaper and visual customization (3.8)
+Customize opens a card gallery with a live card preview. Choose App, Folder, Website or File for a shortcut; local destinations use Mac pickers. Only Website needs a visible URL field. Built-in and custom shortcut cards can use cyan or red accents. Workspace/music and advanced configuration are separate from card editing.
+
+Wallpaper offers Still, Ambient glow, or Your video. Ambient glow is the default: it uses the existing city image and a compositor opacity animation, with no video decoding or streaming. Video is optional: choose a local file you may use; Cyberdesk converts at most 30 seconds to silent 720p at 24 fps and creates a matching still poster. Only the primary screen plays video; other screens use the poster. The source file stays in place. Replacing a video removes previous app-managed video/poster copies. Third-party clips are not included in this repository. A Pinterest pin is a discovery link, not an automatic download or redistribution license.
+
+Motion pauses on battery, Low Power Mode, Reduce Motion, display sleep, high system CPU, thermal pressure, hidden desktop windows, or approximately full window coverage. It uses a coarse coverage estimate, not screenshots. Resource use depends on the Mac and other apps; GPU and all WebKit work have not been benchmarked comprehensively. Still remains available.
+
+The matching native still is applied to connected screens in their active desktop Spaces. Other Spaces may need macOS Wallpaper → Show on all Spaces. Custom video is not installed on the pre-login screen. Wallpaper backups/settings are local in `~/Library/Application Support/Cyberdesk/Wallpaper`, outside this repository. Undo wallpaper changes restores the original native pictures and the still Cyberdesk city. Restore original desktop / Quit also turns off sign-in startup. A wallpaper apply → restore → reapply test passed on three connected displays. Native downloaded-video playback on other machines remains unverified.

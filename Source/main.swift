@@ -66,6 +66,7 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
     var views: [WKWebView] = []
     var status: NSStatusItem!
     var timer: Timer?
+    let wallpaper=WallpaperController()
     var musicConnected = false
     var busy = false
     var lastCPU: [UInt32] = []
@@ -90,6 +91,12 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
         loadDesktopItems()
         watchDesktop()
         saveBaseline()
+        do{try wallpaper.prepare()}catch{wallpaper.settings.matchNative=false;wallpaper.image=Bundle.main.url(forResource:"city",withExtension:"png").flatMap{NSImage(contentsOf:$0)};configurationError="Wallpaper backup/apply failed: \(error.localizedDescription)"}
+        let notifications=NSWorkspace.shared.notificationCenter
+        notifications.addObserver(forName:NSWorkspace.screensDidSleepNotification,object:nil,queue:.main){[weak self]_ in self?.wallpaper.sleeping=true;self?.wallpaper.update(cpu:0)}
+        notifications.addObserver(forName:NSWorkspace.willSleepNotification,object:nil,queue:.main){[weak self]_ in self?.wallpaper.sleeping=true;self?.wallpaper.update(cpu:0)}
+        notifications.addObserver(forName:NSWorkspace.screensDidWakeNotification,object:nil,queue:.main){[weak self]_ in self?.wallpaper.sleeping=false;self?.wallpaper.update(cpu:0)}
+
         status = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         status.button?.title = "⌘ CD"
         status.button?.toolTip = "Cyberdesk — desktop controls and restore"
@@ -141,7 +148,7 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
         }
         let editorConfig=(try? JSONEncoder().encode(configuration)).flatMap{try? JSONSerialization.jsonObject(with:$0)} ?? [:]
         let custom=(configuration.customCards ?? []).map{["id":$0.id,"title":$0.title,"color":$0.color ?? "cyan"]}
-        send("updateConfiguration",["editorConfig":editorConfig,"desktopLabels":configuration.desktopLabels ?? [:],"desktopGroups":configuration.desktopGroups ?? [:],"customCards":custom,"cardTitles":configuration.cardTitles ?? [:],"workspaceName":configuration.workspaceName,"sections":groups,"music":["provider":configuration.music.provider,"name":configuration.music.displayName,"url":configuration.music.url ?? "","nativeControls":configuration.music.appBundleID != nil],"folderGroups":Array((configuration.folderGroups ?? [:]).keys).sorted()])
+        send("updateConfiguration",["editorConfig":editorConfig,"desktopLabels":configuration.desktopLabels ?? [:],"desktopGroups":configuration.desktopGroups ?? [:],"customCards":custom,"cardTitles":configuration.cardTitles ?? [:],"cardColors":configuration.cardColors ?? [:],"workspaceName":configuration.workspaceName,"sections":groups,"music":["provider":configuration.music.provider,"name":configuration.music.displayName,"url":configuration.music.url ?? "","nativeControls":configuration.music.appBundleID != nil],"folderGroups":Array((configuration.folderGroups ?? [:]).keys).sorted()])
         if let error=configurationError{send("showFeedback",["text":error,"error":true])}
     }
     func openMusicService() {
@@ -203,7 +210,7 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
             web.navigationDelegate = self
             web.autoresizingMask = [.width,.height]
             web.setValue(false, forKey: "drawsBackground")
-            win.contentView = web
+            let host=WallpaperSurface(frame:web.frame);host.addSubview(web);win.contentView=host;wallpaper.surfaces.append(host)
             web.loadFileURL(resource.appendingPathComponent("desktop.html"),allowingReadAccessTo:resource)
             win.orderFrontRegardless()
             windows.append(win); views.append(web)
@@ -221,17 +228,18 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
         let web=ClickableWebView(frame:NSRect(origin:.zero,size:win.frame.size),configuration:conf)
         wireDrop(web)
         web.navigationDelegate=self;web.autoresizingMask=[.width,.height]
-        win.contentView=web
+        let host=WallpaperSurface(frame:web.frame);host.addSubview(web);win.contentView=host;wallpaper.surfaces.append(host)
         web.loadFileURL(resource.appendingPathComponent("desktop.html"),allowingReadAccessTo:resource)
         windows.append(win);views.append(web)
         win.makeKeyAndOrderFront(nil);NSApp.activate(ignoringOtherApps:true)
     }
 
-    @objc func screensChanged() { for win in windows { win.close() }; windows=[]; views=[]; createWindows() }
+    @objc func screensChanged() { for win in windows { win.close() }; windows=[]; views=[];wallpaper.surfaces=[];createWindows();if wallpaper.settings.matchNative{try? wallpaper.matchNative()} }
     @objc func showDesk() { for win in windows { win.orderFrontRegardless() } }
     @objc func hideDesk() { for win in windows { win.orderOut(nil) } }
     @objc func openSetup() { NSWorkspace.shared.open(URL(fileURLWithPath:home+"/Documents/Cyberdesk")) }
     @objc func restore() {
+        if wallpaper.settings.matchNative {do{try wallpaper.restoreNative();wallpaper.settings.matchNative=false;try wallpaper.save()}catch{send("showFeedback",["text":"Could not restore wallpaper: \(error.localizedDescription)","error":true]);return}}
         setStartupEnabled(false)
         NSApp.terminate(nil)
     }
@@ -292,6 +300,13 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
             }
             return
         }
+        if key.hasPrefix("wallpaper:"){let action=String(key.dropFirst(10));do{switch action {
+            case "choose":let picker=NSOpenPanel();picker.allowedContentTypes=[.movie];picker.canChooseDirectories=false;picker.message="Choose a local video · optimized to a silent 720p, 24 fps loop up to 30 seconds";NSApp.activate(ignoringOtherApps:true);if picker.runModal() == .OK,let url=picker.url{send("showFeedback",["text":"Optimizing wallpaper once. Your original video stays in place."]);wallpaper.importVideo(url){[weak self]error in self?.send("showFeedback",["text":error?.localizedDescription ?? "Video ready. Motion pauses on battery and during heavy work.","error":error != nil]);self?.tick()}}
+            case "undo":try wallpaper.undo()
+            case "match":wallpaper.settings.matchNative=true;try wallpaper.matchNative();try wallpaper.save()
+            case "still","subtle","video":if action == "video" && wallpaper.settings.videoPath == nil{throw ConfigError.invalid("Choose a video first.")};wallpaper.settings.mode=action;try wallpaper.save()
+            default:break};tick()}catch{send("showFeedback",["text":error.localizedDescription,"error":true])};return}
+        if key.hasPrefix("pickShortcut:"),let data=String(key.dropFirst(13)).data(using:.utf8),let request=try? JSONSerialization.jsonObject(with:data)as?[String:String],let token=request["token"],let kind=request["kind"]{let picker=NSOpenPanel();picker.canChooseDirectories=kind == "folder";picker.canChooseFiles=kind != "folder";picker.allowsMultipleSelection=false;if kind == "app"{picker.allowedContentTypes=[.application]};picker.message="Choose a \(kind) for this shortcut";NSApp.activate(ignoringOtherApps:true);if picker.runModal() == .OK,let url=picker.url{send("shortcutPicked",["token":token,"path":url.path,"name":url.deletingPathExtension().lastPathComponent])};return}
         if key == "addDesktopFiles" {let picker=NSOpenPanel();picker.allowsMultipleSelection=true;picker.canChooseDirectories=false;picker.message="Copy files to Desktop / Loose Files · originals stay in place";NSApp.activate(ignoringOtherApps:true);if picker.runModal() == .OK,let view=message.webView as? ClickableWebView{importDesktopDrop(DesktopDrop(urls:picker.urls),view:view)};return}
         if key.hasPrefix("fileOrganization:") {do{guard let data=String(key.dropFirst(17)).data(using:.utf8),let values=try JSONSerialization.jsonObject(with:data) as? [String:String],let id=values["id"],let url=fileTargets[id]else{return};var next=configuration;next.desktopLabels=next.desktopLabels ?? [:];next.desktopGroups=next.desktopGroups ?? [:];let name=url.lastPathComponent;if let label=values["label"],!label.isEmpty{next.desktopLabels?[name]=label}else{next.desktopLabels?.removeValue(forKey:name)};if let group=values["group"],!group.isEmpty{next.desktopGroups?[name]=group}else{next.desktopGroups?.removeValue(forKey:name)};try configStore.save(next);setupDestinations();publishConfiguration();publishFiles();send("showFeedback",["text":"Cyberdesk labels saved. Original filenames and locations unchanged.","error":false])}catch{send("showFeedback",["text":error.localizedDescription,"error":true])};return}
         if key.hasPrefix("workflowConfig:") {do{guard let data=String(key.dropFirst(15)).data(using:.utf8),data.count<300_000 else{return};let next=try JSONDecoder().decode(WorkflowConfiguration.self,from:data);try configStore.save(next);setupDestinations();publishConfiguration();loadDesktopItems();publishFiles();send("showFeedback",["text":"Cards saved. Use CARDS to show custom cards on each monitor.","error":false])}catch{send("showFeedback",["text":error.localizedDescription,"error":true])};return}
@@ -401,8 +416,10 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
     }
     func tick() {
         if configStore.modified != configModified {let old=configModified;setupDestinations();if configModified != old{loadDesktopItems();publishConfiguration();publishFiles();if let error=configurationError{send("showFeedback",["text":error,"error":true])}}}
+        let measuredCPU=cpu();wallpaper.update(cpu:measuredCPU)
+        send("updateWallpaper",["native":wallpaper.image != nil,"mode":wallpaper.settings.mode,"status":wallpaper.status,"matched":wallpaper.settings.matchNative,"hasVideo":wallpaper.settings.videoPath != nil])
         let running=Set(NSWorkspace.shared.runningApplications.compactMap{$0.bundleURL?.path})
-        send("updateSystem",["cpu":Int(cpu().rounded()),"memory":Int(memory().rounded()),"battery":battery(),"running":destinations.filter{running.contains($0.value)}.map{$0.key}])
+        send("updateSystem",["cpu":Int(measuredCPU.rounded()),"memory":Int(memory().rounded()),"battery":battery(),"running":destinations.filter{running.contains($0.value)}.map{$0.key}])
         let music=configuration.music
         guard let appID=music.appBundleID,let appName=music.appScriptName else {send("updateMusic",["state":"web","title":music.displayName,"artist":"Open your music service in the browser","position":0,"duration":0]);return}
         guard musicConnected else{send("updateMusic",["state":"connect","title":music.displayName,"artist":"Connect to see your current track","position":0,"duration":0]);return};guard !busy else{return}
@@ -432,6 +449,8 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
     }
 }
 let app=NSApplication.shared
+if CommandLine.arguments.contains("--wallpaper-report"){let controller=WallpaperController();let rows=NSScreen.screens.map{["display":controller.displayID($0),"wallpaper":NSWorkspace.shared.desktopImageURL(for:$0)?.path ?? ""]};if let data=try? JSONSerialization.data(withJSONObject:rows,options:[.prettyPrinted,.sortedKeys]),let value=String(data:data,encoding:.utf8){print(value)};exit(0)}
+if CommandLine.arguments.contains("--restore-wallpaper"){let controller=WallpaperController();if let data=try? Data(contentsOf:controller.settingsURL),let settings=try? JSONDecoder().decode(WallpaperSettings.self,from:data){controller.settings=settings};do{try controller.restoreNative();controller.settings.mode="still";controller.settings.matchNative=false;try controller.save();print("Original wallpapers restored")}catch{fputs("Wallpaper restore failed: \(error.localizedDescription)\n",stderr);exit(1)};exit(0)}
 let delegate=Desk()
 app.delegate=delegate
 app.run()

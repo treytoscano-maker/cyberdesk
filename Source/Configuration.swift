@@ -1,6 +1,7 @@
 import Cocoa
 
 struct WorkflowShortcut: Codable {
+    var kind:String?
     var id: String?
     var label: String
     var detail: String?
@@ -32,6 +33,7 @@ struct WorkflowCard: Codable {
 struct WorkflowConfiguration: Codable {
     var customCards:[WorkflowCard]?
     var cardTitles:[String:String]?
+    var cardColors:[String:String]?
     var desktopLabels:[String:String]?
     var desktopGroups:[String:String]?
     var allSections:[String:[WorkflowShortcut]] {var result=sections;for card in customCards ?? []{result[card.id]=card.shortcuts};return result}
