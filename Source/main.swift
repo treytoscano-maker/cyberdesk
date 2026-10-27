@@ -8,10 +8,40 @@ final class DesktopWindow: NSWindow {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
 }
-final class ClickableWebView: WKWebView {
+final class ClickableWebView: WKWebView, NSDraggingSource {
     var onDesktopDrop:((DesktopDrop,ClickableWebView)->Void)?
     override func acceptsFirstMouse(for event:NSEvent?)->Bool {true}
-    func installDropSupport(){registerForDraggedTypes([.fileURL,.png,.tiff])}
+    var fileDragMonitor:Any?
+    var fileDragURL:URL?
+    var fileDragDown:NSEvent?
+    deinit {if let monitor=fileDragMonitor{NSEvent.removeMonitor(monitor)}}
+    func installDropSupport(){
+        registerForDraggedTypes([.fileURL,.png,.tiff])
+        fileDragMonitor=NSEvent.addLocalMonitorForEvents(matching:[.leftMouseDown,.leftMouseDragged,.leftMouseUp]){[weak self] event in
+            guard let self=self,event.window === self.window else{return event}
+            if event.type == .leftMouseDown {self.fileDragURL=nil;self.fileDragDown=event}
+            if event.type == .leftMouseUp {self.fileDragURL=nil;self.fileDragDown=nil}
+            if event.type == .leftMouseDragged,let url=self.fileDragURL,let down=self.fileDragDown {
+                let a=event.locationInWindow,b=down.locationInWindow
+                if hypot(a.x-b.x,a.y-b.y)>=5 {
+                    self.fileDragURL=nil;self.fileDragDown=nil
+                    self.evaluateJavaScript("window.fileDragDidStart && window.fileDragDidStart()",completionHandler:nil)
+                    let item=NSDraggingItem(pasteboardWriter:url as NSURL)
+                    let image=NSWorkspace.shared.icon(forFile:url.path);image.size=NSSize(width:64,height:64)
+                    let point=self.convert(event.locationInWindow,from:nil)
+                    item.setDraggingFrame(NSRect(x:point.x-32,y:point.y-32,width:64,height:64),contents:image)
+                    let session=self.beginDraggingSession(with:[item],event:event,source:self)
+                    session.animatesToStartingPositionsOnCancelOrFail=true
+                    return nil
+                }
+            }
+            return event
+        }
+    }
+    func armFileDrag(_ url:URL){guard fileDragDown != nil,FileManager.default.fileExists(atPath:url.path)else{return};fileDragURL=url}
+    func draggingSession(_ session:NSDraggingSession,sourceOperationMaskFor context:NSDraggingContext)->NSDragOperation{.copy}
+    func draggingSession(_ session:NSDraggingSession,endedAt screenPoint:NSPoint,operation:NSDragOperation){fileDragURL=nil;fileDragDown=nil;evaluateJavaScript("window.fileDragDidEnd && window.fileDragDidEnd()",completionHandler:nil)}
+
     func droppedPayload(_ pasteboard:NSPasteboard)->DesktopDrop? {
         let urls=(pasteboard.readObjects(forClasses:[NSURL.self],options:[.urlReadingFileURLsOnly:true]) as? [URL]) ?? []
         if !urls.isEmpty {return DesktopDrop(urls:urls)}
@@ -86,8 +116,8 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
             if changed || !musicConnected {musicConnected=UserDefaults.standard.bool(forKey:"musicConnected-"+next.music.provider) || (next.music.provider == "spotify" && UserDefaults.standard.bool(forKey:"spotifyConnected"))}
         }catch{configurationError="Configuration: \(error.localizedDescription)";configModified=configStore.modified}
         destinations=[:];routeURLs=[:]
-        for group in ["projects","ai","creative","systems","links"] {
-            for (index,item) in (configuration.sections[group] ?? []).enumerated() {
+        for group in configuration.allSections.keys {
+            for (index,item) in (configuration.allSections[group] ?? []).enumerated() {
                 let id=item.id ?? "\(group)-\(index)"
                 if let text=item.url,let url=URL(string:text){routeURLs[id]=url;continue}
                 var app:URL?
@@ -102,14 +132,16 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
     }
     func publishConfiguration() {
         var groups:[String:[[String:Any]]]=[:]
-        for group in ["projects","ai","creative","systems","links"] {
-            groups[group]=(configuration.sections[group] ?? []).enumerated().map { index,item in
+        for group in configuration.allSections.keys {
+            groups[group]=(configuration.allSections[group] ?? []).enumerated().map { index,item in
                 let id=item.id ?? "\(group)-\(index)"
                 let available=routeURLs[id] != nil || destinations[id].map {FileManager.default.fileExists(atPath:$0)} == true
                 return ["id":id,"label":item.label,"detail":item.detail ?? "","available":available]
             }
         }
-        send("updateConfiguration",["workspaceName":configuration.workspaceName,"sections":groups,"music":["provider":configuration.music.provider,"name":configuration.music.displayName,"url":configuration.music.url ?? "","nativeControls":configuration.music.appBundleID != nil],"folderGroups":Array((configuration.folderGroups ?? [:]).keys).sorted()])
+        let editorConfig=(try? JSONEncoder().encode(configuration)).flatMap{try? JSONSerialization.jsonObject(with:$0)} ?? [:]
+        let custom=(configuration.customCards ?? []).map{["id":$0.id,"title":$0.title,"color":$0.color ?? "cyan"]}
+        send("updateConfiguration",["editorConfig":editorConfig,"desktopLabels":configuration.desktopLabels ?? [:],"desktopGroups":configuration.desktopGroups ?? [:],"customCards":custom,"cardTitles":configuration.cardTitles ?? [:],"workspaceName":configuration.workspaceName,"sections":groups,"music":["provider":configuration.music.provider,"name":configuration.music.displayName,"url":configuration.music.url ?? "","nativeControls":configuration.music.appBundleID != nil],"folderGroups":Array((configuration.folderGroups ?? [:]).keys).sorted()])
         if let error=configurationError{send("showFeedback",["text":error,"error":true])}
     }
     func openMusicService() {
@@ -261,9 +293,13 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
             return
         }
         if key == "addDesktopFiles" {let picker=NSOpenPanel();picker.allowsMultipleSelection=true;picker.canChooseDirectories=false;picker.message="Copy files to Desktop / Loose Files · originals stay in place";NSApp.activate(ignoringOtherApps:true);if picker.runModal() == .OK,let view=message.webView as? ClickableWebView{importDesktopDrop(DesktopDrop(urls:picker.urls),view:view)};return}
+        if key.hasPrefix("fileOrganization:") {do{guard let data=String(key.dropFirst(17)).data(using:.utf8),let values=try JSONSerialization.jsonObject(with:data) as? [String:String],let id=values["id"],let url=fileTargets[id]else{return};var next=configuration;next.desktopLabels=next.desktopLabels ?? [:];next.desktopGroups=next.desktopGroups ?? [:];let name=url.lastPathComponent;if let label=values["label"],!label.isEmpty{next.desktopLabels?[name]=label}else{next.desktopLabels?.removeValue(forKey:name)};if let group=values["group"],!group.isEmpty{next.desktopGroups?[name]=group}else{next.desktopGroups?.removeValue(forKey:name)};try configStore.save(next);setupDestinations();publishConfiguration();publishFiles();send("showFeedback",["text":"Cyberdesk labels saved. Original filenames and locations unchanged.","error":false])}catch{send("showFeedback",["text":error.localizedDescription,"error":true])};return}
+        if key.hasPrefix("workflowConfig:") {do{guard let data=String(key.dropFirst(15)).data(using:.utf8),data.count<300_000 else{return};let next=try JSONDecoder().decode(WorkflowConfiguration.self,from:data);try configStore.save(next);setupDestinations();publishConfiguration();loadDesktopItems();publishFiles();send("showFeedback",["text":"Cards saved. Use CARDS to show custom cards on each monitor.","error":false])}catch{send("showFeedback",["text":error.localizedDescription,"error":true])};return}
         if key == "openConfig" {NSWorkspace.shared.open(configStore.url);return}
         if key == "importConfig" {importConfiguration();return}
         if key == "music-open" {openMusicService();return}
+        if key.hasPrefix("armFileDrag:"),let view=message.webView as? ClickableWebView {if let url=fileTargets[String(key.dropFirst(12))]{view.armFileDrag(url)};return}
+        if key.hasPrefix("preview:") {let id=String(key.dropFirst(8));guard let url=fileTargets[id]else{return};thumbnailQueue.async{[weak self]in guard let self=self else{return};let src=self.fileStore.thumbnail(url,maxPixels:2400);DispatchQueue.main.async{self.send("updateImagePreview",["id":id,"src":src ?? "","name":url.lastPathComponent])}};return}
         if key.hasPrefix("thumb:") {requestThumbnail(String(key.dropFirst(6)));return}
         if key.hasPrefix("settings:") {do{guard let data=String(key.dropFirst(9)).data(using:.utf8),let fields=try JSONSerialization.jsonObject(with:data) as? [String:String]else{return};var next=configuration;if let name=fields["workspaceName"]{next.workspaceName=name};if let provider=fields["provider"]{next.music.provider=provider};next.music.url=fields["url"];try configStore.save(next);setupDestinations();publishConfiguration();tick();send("showFeedback",["text":"Workflow settings saved.","error":false])}catch{send("showFeedback",["text":error.localizedDescription,"error":true])};return}
         if key == "refreshFiles" { loadDesktopItems(); publishFiles(); return }

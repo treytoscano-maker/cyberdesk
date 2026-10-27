@@ -35,8 +35,8 @@ final class DesktopFileStore {
         }
         throw ConfigError.invalid("Could not choose an unused screenshot filename.")
     }
-    func thumbnail(_ url:URL)->String? {
-        guard let source=CGImageSourceCreateWithURL(url as CFURL,nil),let image=CGImageSourceCreateThumbnailAtIndex(source,0,[kCGImageSourceCreateThumbnailFromImageAlways:true,kCGImageSourceCreateThumbnailWithTransform:true,kCGImageSourceThumbnailMaxPixelSize:180] as CFDictionary) else{return nil}
+    func thumbnail(_ url:URL,maxPixels:Int=180)->String? {
+        guard let source=CGImageSourceCreateWithURL(url as CFURL,nil),let image=CGImageSourceCreateThumbnailAtIndex(source,0,[kCGImageSourceCreateThumbnailFromImageAlways:true,kCGImageSourceCreateThumbnailWithTransform:true,kCGImageSourceThumbnailMaxPixelSize:maxPixels] as CFDictionary) else{return nil}
         let data=NSMutableData();guard let output=CGImageDestinationCreateWithData(data,"public.png" as CFString,1,nil)else{return nil};CGImageDestinationAddImage(output,image,nil);guard CGImageDestinationFinalize(output)else{return nil}
         return "data:image/png;base64,"+(data as Data).base64EncodedString()
     }

@@ -23,7 +23,18 @@ struct WorkflowMusic: Codable {
         return nil
     }
 }
+struct WorkflowCard: Codable {
+    var id:String
+    var title:String
+    var color:String?
+    var shortcuts:[WorkflowShortcut]
+}
 struct WorkflowConfiguration: Codable {
+    var customCards:[WorkflowCard]?
+    var cardTitles:[String:String]?
+    var desktopLabels:[String:String]?
+    var desktopGroups:[String:String]?
+    var allSections:[String:[WorkflowShortcut]] {var result=sections;for card in customCards ?? []{result[card.id]=card.shortcuts};return result}
     var schemaVersion: Int
     var workspaceName: String
     var music: WorkflowMusic
@@ -43,9 +54,15 @@ struct WorkflowConfiguration: Codable {
         guard !workspaceName.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty else {throw ConfigError.invalid("Give your workspace a name.")}
         guard ["spotify","appleMusic","soundcloud","custom"].contains(music.provider) else {throw ConfigError.invalid("Unknown music provider.")}
         if music.provider == "custom",music.webURL == nil {throw ConfigError.invalid("A custom music service needs a valid link.")}
+        var cardIDs=Set<String>()
+        guard (customCards ?? []).count<=20 else{throw ConfigError.invalid("Use up to 20 custom cards.")}
+        for card in customCards ?? [] {
+            guard card.id.range(of:"^custom-[A-Za-z0-9_-]+$",options:.regularExpression) != nil,!cardIDs.contains(card.id),!card.title.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty else{throw ConfigError.invalid("Custom cards need a unique custom- id and a title.")}
+            cardIDs.insert(card.id)
+        }
         var ids=Set<String>()
-        for group in ["projects","ai","creative","systems","links"] {
-            for (index,item) in (sections[group] ?? []).enumerated() {
+        for group in allSections.keys {
+            for (index,item) in (allSections[group] ?? []).enumerated() {
                 let id=item.id ?? "\(group)-\(index)"
                 guard !id.isEmpty,id.range(of:"^[A-Za-z0-9_-]+$",options:.regularExpression) != nil,!["restore","connect","playpause","openConfig","importConfig","music-open","refreshFiles","openDesktop","addDesktopFiles"].contains(id),!ids.contains(id) else {throw ConfigError.invalid("Every shortcut must have a unique id: \(id)")}
                 ids.insert(id)

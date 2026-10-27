@@ -1,20 +1,20 @@
 {
-  "folderGroups" : {
-    "Apps & systems" : [
+  "folderGroups": {
+    "Apps & systems": [
       "app",
       "system",
       "build",
       "code"
     ],
-    "Brands & business" : [
+    "Brands & business": [
       "brand",
       "business"
     ],
-    "Client work" : [
+    "Client work": [
       "client",
       "work"
     ],
-    "Creative & media" : [
+    "Creative & media": [
       "film",
       "design",
       "photo",
@@ -23,81 +23,83 @@
       "screenshot",
       "recording"
     ],
-    "Personal & school" : [
+    "Personal & school": [
       "personal",
       "school",
       "study"
     ]
   },
-  "music" : {
-    "provider" : "spotify"
+  "music": {
+    "provider": "spotify"
   },
-  "schemaVersion" : 1,
-  "sections" : {
-    "ai" : [
+  "schemaVersion": 1,
+  "sections": {
+    "ai": [
       {
-        "application" : "ChatGPT",
-        "bundleIdentifier" : "com.openai.codex",
-        "id" : "chatgpt",
-        "label" : "ChatGPT"
+        "application": "ChatGPT",
+        "bundleIdentifier": "com.openai.codex",
+        "id": "chatgpt",
+        "label": "ChatGPT"
       },
       {
-        "application" : "Claude",
-        "bundleIdentifier" : "com.anthropic.claudefordesktop",
-        "id" : "claude",
-        "label" : "Claude"
+        "application": "Claude",
+        "bundleIdentifier": "com.anthropic.claudefordesktop",
+        "id": "claude",
+        "label": "Claude"
       },
       {
-        "application" : "Cursor",
-        "id" : "cursor",
-        "label" : "Cursor"
+        "application": "Cursor",
+        "id": "cursor",
+        "label": "Cursor"
       }
     ],
-    "creative" : [
+    "creative": [
       {
-        "bundleIdentifier" : "com.apple.Safari",
-        "id" : "safari",
-        "label" : "Safari"
+        "bundleIdentifier": "com.apple.Safari",
+        "id": "safari",
+        "label": "Safari"
       },
       {
-        "bundleIdentifier" : "com.apple.Notes",
-        "id" : "notes",
-        "label" : "Notes"
+        "bundleIdentifier": "com.apple.Notes",
+        "id": "notes",
+        "label": "Notes"
       }
     ],
-    "links" : [
+    "links": [
       {
-        "id" : "web-github",
-        "label" : "GitHub",
-        "url" : "https://github.com/"
+        "id": "web-github",
+        "label": "GitHub",
+        "url": "https://github.com/"
       },
       {
-        "id" : "web-google",
-        "label" : "Google",
-        "url" : "https://www.google.com/"
+        "id": "web-google",
+        "label": "Google",
+        "url": "https://www.google.com/"
       },
       {
-        "id" : "web-youtube",
-        "label" : "YouTube",
-        "url" : "https://www.youtube.com/"
+        "id": "web-youtube",
+        "label": "YouTube",
+        "url": "https://www.youtube.com/"
       }
     ],
-    "projects" : [
+    "projects": [
       {
-        "detail" : "Your project folders",
-        "id" : "projects-folder",
-        "label" : "Projects",
-        "path" : "~/Documents"
+        "detail": "Your project folders",
+        "id": "projects-folder",
+        "label": "Projects",
+        "path": "~/Documents"
       },
       {
-        "id" : "downloads-folder",
-        "label" : "Downloads",
-        "path" : "~/Downloads"
+        "id": "downloads-folder",
+        "label": "Downloads",
+        "path": "~/Downloads"
       }
     ],
-    "systems" : [
-
-    ]
+    "systems": []
   },
-  "workspaceName" : "Your workspace"
+  "workspaceName": "Your workspace",
+  "customCards": [],
+  "cardTitles": {},
+  "desktopLabels": {},
+  "desktopGroups": {}
 }
