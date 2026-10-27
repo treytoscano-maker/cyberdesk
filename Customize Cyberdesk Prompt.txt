@@ -1,0 +1,18 @@
+Customize Cyberdesk for my workflow. Read its README and Source/config.example.json first. Produce a valid schemaVersion 1 config.json using only my supplied preferences and confirmed paths/apps. Keep all five sections: projects, ai, creative, systems, links. Each shortcut needs a unique safe id, label, optional detail, and a path, application, bundleIdentifier or URL. Paths start / or ~/. Use only supported URL schemes. Preserve existing IDs when updating. Do not include passwords, API keys or client document contents.
+
+My workspace name:
+My projects and folder paths:
+My creative programs:
+My AI tools and preferred models:
+My systems/dashboards and URLs:
+My everyday links:
+Music provider (spotify, appleMusic, soundcloud or custom):
+Music URL (optional, required for custom):
+Folder group names and matching keywords:
+My monitor arrangement and preferred cards:
+
+Inspect installed applications/paths if you have local access. Ask only for missing destinations that cannot be inferred; otherwise mark uncertain entries clearly and give me a reviewable config. Do not invent installed apps or claim an unavailable integration works. Model preferences may be documented as shortcut detail; launching a tool does not select a model. Spotify/Apple Music have native controls after local authorization. SoundCloud/custom are honest web launchers with playback in their own player.
+
+Back up my existing config before importing; Cyberdesk's Import workflow file button does this automatically. Validate the configuration, present the result and explain missing items. Keep originals and files where they are. Do not install software, enable login startup, call paid APIs, grant permissions, publish a repository or share private files unless separately requested. Arrange monitor cards through Cyberdesk so each screen retains its own layout; monitor preferences are not fields in workflow config.
+
+Return config.json plus a short setup checklist. If local edits are authorized, save a separate proposed file, validate it, then import using Cyberdesk's built-in backup flow. Include no credentials.

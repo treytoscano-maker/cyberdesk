@@ -1,0 +1,103 @@
+{
+  "folderGroups" : {
+    "Apps & systems" : [
+      "app",
+      "system",
+      "build",
+      "code"
+    ],
+    "Brands & business" : [
+      "brand",
+      "business"
+    ],
+    "Client work" : [
+      "client",
+      "work"
+    ],
+    "Creative & media" : [
+      "film",
+      "design",
+      "photo",
+      "media",
+      "music",
+      "screenshot",
+      "recording"
+    ],
+    "Personal & school" : [
+      "personal",
+      "school",
+      "study"
+    ]
+  },
+  "music" : {
+    "provider" : "spotify"
+  },
+  "schemaVersion" : 1,
+  "sections" : {
+    "ai" : [
+      {
+        "application" : "ChatGPT",
+        "bundleIdentifier" : "com.openai.codex",
+        "id" : "chatgpt",
+        "label" : "ChatGPT"
+      },
+      {
+        "application" : "Claude",
+        "bundleIdentifier" : "com.anthropic.claudefordesktop",
+        "id" : "claude",
+        "label" : "Claude"
+      },
+      {
+        "application" : "Cursor",
+        "id" : "cursor",
+        "label" : "Cursor"
+      }
+    ],
+    "creative" : [
+      {
+        "bundleIdentifier" : "com.apple.Safari",
+        "id" : "safari",
+        "label" : "Safari"
+      },
+      {
+        "bundleIdentifier" : "com.apple.Notes",
+        "id" : "notes",
+        "label" : "Notes"
+      }
+    ],
+    "links" : [
+      {
+        "id" : "web-github",
+        "label" : "GitHub",
+        "url" : "https://github.com/"
+      },
+      {
+        "id" : "web-google",
+        "label" : "Google",
+        "url" : "https://www.google.com/"
+      },
+      {
+        "id" : "web-youtube",
+        "label" : "YouTube",
+        "url" : "https://www.youtube.com/"
+      }
+    ],
+    "projects" : [
+      {
+        "detail" : "Your project folders",
+        "id" : "projects-folder",
+        "label" : "Projects",
+        "path" : "~/Documents"
+      },
+      {
+        "id" : "downloads-folder",
+        "label" : "Downloads",
+        "path" : "~/Downloads"
+      }
+    ],
+    "systems" : [
+
+    ]
+  },
+  "workspaceName" : "Your workspace"
+}
