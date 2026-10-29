@@ -98,16 +98,16 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
         notifications.addObserver(forName:NSWorkspace.screensDidWakeNotification,object:nil,queue:.main){[weak self]_ in self?.wallpaper.sleeping=false;self?.wallpaper.update(cpu:0)}
 
         status = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        status.button?.title = "⌘ CD"
-        status.button?.toolTip = "Cyberdesk — desktop controls and restore"
+        status.button?.title = "⌘ D"
+        status.button?.toolTip = "Desktop — desktop controls and restore"
         let menu = NSMenu()
-        menu.addItem(withTitle: "Cyberdesk · \(configuration.workspaceName)", action: nil, keyEquivalent: "")
+        menu.addItem(withTitle: "Desktop · \(configuration.workspaceName)", action: nil, keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Open workspace window", action: #selector(openWorkspaceWindow), keyEquivalent: "")
         menu.addItem(withTitle: "Show desktop layer", action: #selector(showDesk), keyEquivalent: "")
         menu.addItem(withTitle: "Hide desktop layer", action: #selector(hideDesk), keyEquivalent: "")
         menu.addItem(withTitle: "Connect music controls", action: #selector(connectMusic), keyEquivalent: "")
-        menu.addItem(withTitle: "Enable Cyberdesk at sign-in", action: #selector(enableStartup), keyEquivalent: "")
+        menu.addItem(withTitle: "Enable Desktop at sign-in", action: #selector(enableStartup), keyEquivalent: "")
         menu.addItem(withTitle: "Open setup & backup folder", action: #selector(openSetup), keyEquivalent: "")
         menu.addItem(NSMenuItem.separator())
         menu.addItem(withTitle: "Restore original desktop / Quit", action: #selector(restore), keyEquivalent: "q")
@@ -166,7 +166,7 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
     }
     func watchDesktop(){let fd=open((home+"/Desktop"),O_EVTONLY);guard fd>=0 else{return};let source=DispatchSource.makeFileSystemObjectSource(fileDescriptor:fd,eventMask:[.write,.rename,.delete,.attrib],queue:.main);source.setEventHandler{[weak self]in guard let self=self else{return};self.desktopRefresh?.cancel();let work=DispatchWorkItem{[weak self]in self?.loadDesktopItems();self?.publishFiles()};self.desktopRefresh=work;DispatchQueue.main.asyncAfter(deadline:.now()+0.35,execute:work)};source.setCancelHandler{close(fd)};desktopWatcher=source;source.resume()}
     func requestThumbnail(_ id:String){guard let url=fileTargets[id]else{return};let modified=(try? url.resourceValues(forKeys:[.contentModificationDateKey]))?.contentModificationDate?.timeIntervalSince1970 ?? 0;let key=(id+String(modified)) as NSString;if let cached=thumbnails.object(forKey:key){send("updateThumbnail",["id":id,"src":cached as String]);return};thumbnailQueue.async{[weak self]in guard let self=self,let src=self.fileStore.thumbnail(url)else{return};self.thumbnails.setObject(src as NSString,forKey:key);DispatchQueue.main.async{self.send("updateThumbnail",["id":id,"src":src])}}}
-    func importConfiguration(){let picker=NSOpenPanel();picker.allowedContentTypes=[.json];picker.allowsMultipleSelection=false;picker.canChooseDirectories=false;picker.message="Choose a Cyberdesk workflow configuration";NSApp.activate(ignoringOtherApps:true);if picker.runModal() == .OK,let url=picker.url {do{let next=try JSONDecoder().decode(WorkflowConfiguration.self,from:Data(contentsOf:url));try configStore.save(next);setupDestinations();loadDesktopItems();publishConfiguration();publishFiles()}catch{send("showFeedback",["text":"Could not import: \(error.localizedDescription)","error":true])}}}
+    func importConfiguration(){let picker=NSOpenPanel();picker.allowedContentTypes=[.json];picker.allowsMultipleSelection=false;picker.canChooseDirectories=false;picker.message="Choose a Desktop workflow configuration";NSApp.activate(ignoringOtherApps:true);if picker.runModal() == .OK,let url=picker.url {do{let next=try JSONDecoder().decode(WorkflowConfiguration.self,from:Data(contentsOf:url));try configStore.save(next);setupDestinations();loadDesktopItems();publishConfiguration();publishFiles()}catch{send("showFeedback",["text":"Could not import: \(error.localizedDescription)","error":true])}}}
     func saveBaseline() {
         let dir = home+"/Documents/Cyberdesk/Original Desktop Backup"
         try? FileManager.default.createDirectory(atPath:dir,withIntermediateDirectories:true)
@@ -192,7 +192,7 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
             // NSWindow screen initialization uses screen-relative coordinates; apply the global frame explicitly.
             win.setFrame(screen.frame, display:false)
             win.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopIconWindow)) + 1)
-            win.title = "Cyberdesk Desktop"
+            win.title = "Desktop"
             win.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
             win.isOpaque = true; win.backgroundColor = .black; win.hasShadow = false; win.isReleasedWhenClosed = false
             let conf = WKWebViewConfiguration()
@@ -221,7 +221,7 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
         if let existing=windows.first(where: { $0.level == .normal }) { existing.makeKeyAndOrderFront(nil);NSApp.activate(ignoringOtherApps:true);return }
         guard let screen=NSScreen.main,let resource=Bundle.main.resourceURL else{return}
         let win=NSWindow(contentRect:screen.visibleFrame.insetBy(dx:35,dy:30),styleMask:[.titled,.closable,.miniaturizable,.resizable],backing:.buffered,defer:false)
-        win.title="Cyberdesk — Interactive Workspace"
+        win.title="Desktop — Interactive Workspace"
         win.minSize=NSSize(width:1000,height:760)
         win.isReleasedWhenClosed=false
         let conf=WKWebViewConfiguration();conf.userContentController.addUserScript(WKUserScript(source:"window.cyberdeskDisplayID='workspace-window';window.cyberdeskMonitorName='Workspace window';window.cyberdeskMonitorCount=0;",injectionTime:.atDocumentStart,forMainFrameOnly:true));conf.userContentController.add(self,name:"desk")
@@ -268,7 +268,7 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
             let data=try PropertyListSerialization.data(fromPropertyList:config,format:.xml,options:0);try data.write(to:file,options:.atomic)
             let ok=launchControl(["enable",service])
             _=launchControl(["bootstrap","gui/\(getuid())",file.path])
-            send("showFeedback",["text":ok ? "Cyberdesk will open on your monitors when you sign in." : "Could not enable Cyberdesk at sign-in.","error": !ok])
+            send("showFeedback",["text":ok ? "Desktop will open on your monitors when you sign in." : "Could not enable Desktop at sign-in.","error": !ok])
         }catch{send("showFeedback",["text":"Could not save sign-in settings: \(error.localizedDescription)","error":true])}
     }
     @objc func connectMusic() {guard configuration.music.appBundleID != nil else{openMusicService();return};musicConnected=true;UserDefaults.standard.set(true,forKey:"musicConnected-"+configuration.music.provider);tick()}
@@ -310,7 +310,7 @@ final class Desk: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKNav
             default:break};tick()}catch{send("showFeedback",["text":error.localizedDescription,"error":true])};return}
         if key.hasPrefix("pickShortcut:"),let data=String(key.dropFirst(13)).data(using:.utf8),let request=try? JSONSerialization.jsonObject(with:data)as?[String:String],let token=request["token"],let kind=request["kind"]{let picker=NSOpenPanel();picker.canChooseDirectories=kind == "folder";picker.canChooseFiles=kind != "folder";picker.allowsMultipleSelection=false;if kind == "app"{picker.allowedContentTypes=[.application]};picker.message="Choose a \(kind) for this shortcut";NSApp.activate(ignoringOtherApps:true);if picker.runModal() == .OK,let url=picker.url{send("shortcutPicked",["token":token,"path":url.path,"name":url.deletingPathExtension().lastPathComponent])};return}
         if key == "addDesktopFiles" {let picker=NSOpenPanel();picker.allowsMultipleSelection=true;picker.canChooseDirectories=false;picker.message="Copy files to Desktop / Loose Files · originals stay in place";NSApp.activate(ignoringOtherApps:true);if picker.runModal() == .OK,let view=message.webView as? ClickableWebView{importDesktopDrop(DesktopDrop(urls:picker.urls),view:view)};return}
-        if key.hasPrefix("fileOrganization:") {do{guard let data=String(key.dropFirst(17)).data(using:.utf8),let values=try JSONSerialization.jsonObject(with:data) as? [String:String],let id=values["id"],let url=fileTargets[id]else{return};var next=configuration;next.desktopLabels=next.desktopLabels ?? [:];next.desktopGroups=next.desktopGroups ?? [:];let name=url.lastPathComponent;if let label=values["label"],!label.isEmpty{next.desktopLabels?[name]=label}else{next.desktopLabels?.removeValue(forKey:name)};if let group=values["group"],!group.isEmpty{next.desktopGroups?[name]=group}else{next.desktopGroups?.removeValue(forKey:name)};try configStore.save(next);setupDestinations();publishConfiguration();publishFiles();send("showFeedback",["text":"Cyberdesk labels saved. Original filenames and locations unchanged.","error":false])}catch{send("showFeedback",["text":error.localizedDescription,"error":true])};return}
+        if key.hasPrefix("fileOrganization:") {do{guard let data=String(key.dropFirst(17)).data(using:.utf8),let values=try JSONSerialization.jsonObject(with:data) as? [String:String],let id=values["id"],let url=fileTargets[id]else{return};var next=configuration;next.desktopLabels=next.desktopLabels ?? [:];next.desktopGroups=next.desktopGroups ?? [:];let name=url.lastPathComponent;if let label=values["label"],!label.isEmpty{next.desktopLabels?[name]=label}else{next.desktopLabels?.removeValue(forKey:name)};if let group=values["group"],!group.isEmpty{next.desktopGroups?[name]=group}else{next.desktopGroups?.removeValue(forKey:name)};try configStore.save(next);setupDestinations();publishConfiguration();publishFiles();send("showFeedback",["text":"Desktop labels saved. Original filenames and locations unchanged.","error":false])}catch{send("showFeedback",["text":error.localizedDescription,"error":true])};return}
         if key.hasPrefix("workflowConfig:") {do{guard let data=String(key.dropFirst(15)).data(using:.utf8),data.count<300_000 else{return};let next=try JSONDecoder().decode(WorkflowConfiguration.self,from:data);try configStore.save(next);setupDestinations();publishConfiguration();loadDesktopItems();publishFiles();send("showFeedback",["text":"Cards saved. Use CARDS to show custom cards on each monitor.","error":false])}catch{send("showFeedback",["text":error.localizedDescription,"error":true])};return}
         if key == "openConfig" {NSWorkspace.shared.open(configStore.url);return}
         if key == "importConfig" {importConfiguration();return}

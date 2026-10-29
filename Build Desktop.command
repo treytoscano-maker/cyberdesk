@@ -1,7 +1,7 @@
 #!/bin/zsh
 set -euo pipefail
 cd -- "${0:A:h}"
-app="$HOME/Library/Caches/Cyberdesk/Build/Cyberdesk.app"
+app="$HOME/Library/Caches/Desktop/Build/Desktop.app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 xcrun swiftc Source/main.swift Source/Configuration.swift Source/DesktopFiles.swift Source/Wallpaper.swift -o "$app/Contents/MacOS/Cyberdesk" -framework Cocoa -framework WebKit -framework IOKit -framework AVFoundation -framework QuartzCore
 cp -X Info.plist "$app/Contents/Info.plist"

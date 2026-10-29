@@ -2,22 +2,24 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDisplayName</key>
+	<string>Desktop</string>
 	<key>CFBundleExecutable</key>
 	<string>Cyberdesk</string>
 	<key>CFBundleIdentifier</key>
 	<string>local.cyberdesk.desktop</string>
 	<key>CFBundleName</key>
-	<string>Cyberdesk</string>
+	<string>Desktop</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.9</string>
+	<string>4.0</string>
 	<key>CFBundleVersion</key>
-	<string>14</string>
+	<string>15</string>
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Cyberdesk can show the current track and control Spotify or Apple Music when you connect it.</string>
+	<string>Desktop can show the current track and control Spotify or Apple Music when you connect it.</string>
 	<key>NSDesktopFolderUsageDescription</key>
-	<string>Cyberdesk shows Desktop files and copies files you choose or drop onto it. Originals stay in place.</string>
+	<string>Desktop shows Desktop files and copies files you choose or drop onto it. Originals stay in place.</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 </dict>

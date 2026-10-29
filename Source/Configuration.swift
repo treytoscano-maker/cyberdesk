@@ -80,7 +80,7 @@ enum ConfigError: LocalizedError {case invalid(String);var errorDescription:Stri
 final class ConfigurationStore {
     let url:URL
     init() {
-        if let override=ProcessInfo.processInfo.environment["CYBERDESK_CONFIG"] {url=URL(fileURLWithPath:override)}
+        if let override=ProcessInfo.processInfo.environment["DESKTOP_CONFIG"] {url=URL(fileURLWithPath:override)}
         else {url=FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/Cyberdesk/config.json")}
     }
     func load() throws -> WorkflowConfiguration {

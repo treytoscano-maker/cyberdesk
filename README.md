@@ -1,28 +1,28 @@
-# Cyberdesk for Mac
+# Desktop for Mac
 A movable glass desktop workspace with per-monitor cards, real Desktop browsing, configurable shortcuts and music controls.
 
 ![Visual Customize editor](docs/customize.png)
 
 ## Download
-Get the [latest preview release](https://github.com/treytoscano-maker/cyberdesk/releases/tag/v3.9.0). Download `Cyberdesk-v3.9.0-AppleSilicon.zip` for an experimental prebuilt app on Apple Silicon Macs, or `Cyberdesk-v3.9.0-Starter.zip` for the source starter. Intel Macs must build from source; Intel is untested.
+Get the [latest preview release](https://github.com/treytoscano-maker/desktop/releases/tag/v4.0.0). Download `Desktop-v4.0.0-AppleSilicon.zip` for an experimental prebuilt app on Apple Silicon Macs, or `Desktop-v4.0.0-Starter.zip` for the source starter. Intel Macs must build from source; Intel is untested.
 
 The prebuilt app is locally signed, not Apple Developer ID signed or notarized. macOS may block a downloaded copy. Building from reviewed source is the supported fallback; no security settings need to be disabled. This is an early preview, not a verified installer for every Mac.
 
 ### Personalize with the prompt
-1. Open [Customize Cyberdesk Prompt.txt](Customize%20Cyberdesk%20Prompt.txt).
+1. Open [Customize Desktop Prompt.txt](Customize%20Desktop%20Prompt.txt).
 2. Paste it into your coding assistant with this repository or extracted source folder attached. Fill in your workflow, project paths, apps, AI tools and music choice. No API keys are needed.
 3. Have the assistant produce a `config.json` using [the example](Source/config.example.json).
-4. In Cyberdesk choose **CUSTOMIZE → Import workflow file**. Review the result; previous configuration is backed up automatically.
+4. In Desktop choose **CUSTOMIZE → Import workflow file**. Review the result; previous configuration is backed up automatically.
 5. Use CARDS and ARRANGE on each screen to choose and position its cards.
 
 ## Build from source
 Requires macOS and Apple's Xcode Command Line Tools (install from Apple). Tested locally on macOS 26; other versions and Macs are not yet verified. No paid AI API is required.
 
-1. Run `Build Cyberdesk.command`. It builds outside cloud-synced folders and locally signs `~/Library/Caches/Cyberdesk/Build/Cyberdesk.app`.
+1. Run `Build Desktop.command`. It builds outside cloud-synced folders and locally signs `~/Library/Caches/Desktop/Build/Desktop.app`.
 2. Open the built app. A menu-bar item provides Show, Hide and Restore original desktop / Quit.
 3. Choose CUSTOMIZE for your workspace name and music service. Open the workflow file for projects, apps, AI tools and links, or import JSON made with the included setup prompt. Missing apps show unavailable.
 4. Choose CARDS separately on each monitor. ARRANGE moves/resizes cards. The bar is also movable. Single-monitor choices are separate.
-5. FOLDERS → Desktop / Loose Files shows actual loose Desktop files. Screenshots & Images filters images. Add files or drop a file/image to COPY it onto Desktop without moving originals or overwriting names. New screenshots saved to Desktop appear automatically. Click an image tile for an in-app preview, previous/next navigation and drag-out of the original file. Drag a file tile or preview image into another app to attach the actual file; choose Arrange tiles for internal reordering. Right-click a tile to edit its Cyberdesk display name/group or reveal it in Finder. These labels never rename or move actual files.
+5. FOLDERS → Desktop / Loose Files shows actual loose Desktop files. Screenshots & Images filters images. Add files or drop a file/image to COPY it onto Desktop without moving originals or overwriting names. New screenshots saved to Desktop appear automatically. Click an image tile for an in-app preview, previous/next navigation and drag-out of the original file. Drag a file tile or preview image into another app to attach the actual file; choose Arrange tiles for internal reordering. Right-click a tile to edit its Desktop display name/group or reveal it in Finder. These labels never rename or move actual files.
 
 Spotify and Apple Music can show real playback and controls after Connect and macOS approval. SoundCloud/custom URLs open their own player; native track metadata/transport is not provided for web services. Apple Music was checked against its installed scripting definition but not verified with a playing user library.
 
@@ -36,7 +36,7 @@ Optional config fields: `customCards` (up to 20 `{id, title, color, shortcuts}` 
 ## Configuration
 Local file: `~/Library/Application Support/Cyberdesk/config.json`. Example: `Source/config.example.json`. Saves from Customize/import keep earlier configuration copies in a sibling Backups folder. Manual edits reload automatically; invalid edits keep the last valid setup in the running app. Keep your own copy before editing manually. IDs must be unique letters/numbers/underscores/hyphens; avoid internal action names. Supported sections: projects, ai, creative, systems, links. Use a path (`~/Documents/My Project`), application name, bundleIdentifier, or supported URL. URL routes take precedence. AI entries launch tools; they do not call models, connect accounts or expose keys.
 
-`CYBERDESK_CONFIG` can select a different config file when launching the executable. Layout preferences are stored locally under the app's bundle identifier. Don't ship your config, preferences, Desktop files, logs, or backups.
+`DESKTOP_CONFIG` can select a different config file when launching the executable. Layout preferences are stored locally under the app's bundle identifier. Don't ship your config, preferences, Desktop files, logs, or backups.
 
 ## Restore
 Restore original desktop / Quit closes the overlay and disables its own optional sign-in startup. The app does not replace Finder. Matching the native wallpaper keeps an original copy per display and restores it when using Restore original desktop / Quit. Enable sign-in only if wanted using the menu-bar option; desktop layers open on connected screens at sign-in. Keep your original app and configuration before upgrading. The main author's existing room backup is not included in this generic starter.
@@ -50,13 +50,16 @@ Local Swift build, file-copy/configuration checks, and interface regression chec
 ## Wallpaper and visual customization (3.8)
 Customize opens a card gallery with a live card preview. Choose App, Folder, Website or File for a shortcut; local destinations use Mac pickers. Only Website needs a visible URL field. Built-in and custom shortcut cards can use cyan or red accents. Workspace/music and advanced configuration are separate from card editing.
 
-Wallpaper offers Still, Ambient glow, or Your video. Ambient glow is the default: it uses the existing city image and a compositor opacity animation, with no video decoding or streaming. Video is optional: choose a local file you may use; Cyberdesk converts at most 30 seconds to silent 720p at 24 fps and creates a matching still poster. Only the primary screen plays video; other screens use the poster. The source file stays in place. Replacing a video removes previous app-managed video/poster copies. Third-party clips are not included in this repository. A Pinterest pin is a discovery link, not an automatic download or redistribution license.
+Wallpaper offers Still, Ambient glow, or Your video. Ambient glow is the default: it uses the existing city image and a compositor opacity animation, with no video decoding or streaming. Video is optional: choose a local file you may use; Desktop converts at most 30 seconds to silent 720p at 24 fps and creates a matching still poster. Only the primary screen plays video; other screens use the poster. The source file stays in place. Replacing a video removes previous app-managed video/poster copies. Third-party clips are not included in this repository. A Pinterest pin is a discovery link, not an automatic download or redistribution license.
 
 Motion pauses on battery, Low Power Mode, Reduce Motion, display sleep, high system CPU, thermal pressure, hidden desktop windows, or approximately full window coverage. It uses a coarse coverage estimate, not screenshots. Resource use depends on the Mac and other apps; GPU and all WebKit work have not been benchmarked comprehensively. Still remains available.
 
-The matching native still is applied to connected screens in their active desktop Spaces. Other Spaces may need macOS Wallpaper → Show on all Spaces. Custom video is not installed on the pre-login screen. Wallpaper backups/settings are local in `~/Library/Application Support/Cyberdesk/Wallpaper`, outside this repository. Undo wallpaper changes restores the original native pictures and the still Cyberdesk city. Restore original desktop / Quit also turns off sign-in startup. A wallpaper apply → restore → reapply test passed on three connected displays. Native downloaded-video playback on other machines remains unverified.
+The matching native still is applied to connected screens in their active desktop Spaces. Other Spaces may need macOS Wallpaper → Show on all Spaces. Custom video is not installed on the pre-login screen. Wallpaper backups/settings are local in `~/Library/Application Support/Cyberdesk/Wallpaper`, outside this repository. Undo wallpaper changes restores the original native pictures and the still Desktop city. Restore original desktop / Quit also turns off sign-in startup. A wallpaper apply → restore → reapply test passed on three connected displays. Native downloaded-video playback on other machines remains unverified.
 
 ## Still wallpaper gallery (3.9)
 Customize → Wallpaper now shows a personal thumbnail gallery. Choose a picture to switch the desktop, matching native Mac wallpaper and its stored interface palette. Selecting a picture uses Still mode. Cyber City remains available, and Add image copies an image into your local gallery without changing the source. New imports start with a neutral aqua palette. Palette presets map card warm/cool accents to the selected collection theme.
 
-Gallery metadata lives in `~/Library/Application Support/Cyberdesk/Wallpaper/library.json`, with entries `{id, name, path, palette}`. Supported palette IDs: city, sage, solar, waterfront. These personal files and any AI-enhanced images are excluded from the source and release. A fresh install starts with Cyber City; bring your own permitted images. No image-generation service runs inside Cyberdesk.
+Gallery metadata lives in `~/Library/Application Support/Cyberdesk/Wallpaper/library.json`, with entries `{id, name, path, palette}`. Supported palette IDs: city, sage, solar, waterfront. These personal files and any AI-enhanced images are excluded from the source and release. A fresh install starts with Cyber City; bring your own permitted images. No image-generation service runs inside Desktop.
+
+## Desktop name and upgrade compatibility
+Desktop was previously called Cyberdesk. Version 4.0 changes the app/download names while keeping the existing internal bundle identifiers, executable, settings folders and startup service identifiers. This preserves existing layouts, configuration, wallpaper gallery and restore records. Historical releases keep their former asset names. The personal image collection is not distributed.
